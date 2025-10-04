@@ -1,6 +1,12 @@
 package org.example.quizengine.quiz.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.example.quizengine.quiz.dto.Answers;
 import org.example.quizengine.quiz.dto.Feedback;
 import org.example.quizengine.quiz.entity.Quiz;
@@ -46,4 +52,5 @@ public class QuizController implements CommandLineRunner {
     public void run(String... args){
         System.out.println("done");
     }
+
 }
