@@ -1,20 +1,19 @@
 package org.example.quizengine.quiz.controller;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.example.quizengine.quiz.dto.Answers;
 import org.example.quizengine.quiz.dto.Feedback;
+import org.example.quizengine.quiz.entity.AppUser;
 import org.example.quizengine.quiz.entity.Quiz;
 import org.example.quizengine.quiz.dto.QuizDTO;
 import org.example.quizengine.quiz.service.QuizService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 
 import java.util.List;
@@ -39,8 +38,8 @@ public class QuizController implements CommandLineRunner {
     }
 
     @PostMapping("/api/quizzes")
-    public QuizDTO postAnswer(@Valid @RequestBody Quiz postedQuiz) {
-        return quizService.createQuiz(postedQuiz);
+    public QuizDTO postAnswer(@AuthenticationPrincipal AppUser user, @Valid @RequestBody Quiz postedQuiz) {
+        return quizService.createQuiz(user, postedQuiz);
     }
 
     @PostMapping("/api/quizzes/{id}/solve")
@@ -48,9 +47,18 @@ public class QuizController implements CommandLineRunner {
         return quizService.solveThisQuiz(id, answers);
     }
 
+    @Transactional
+    @DeleteMapping("/api/quizzes/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteQuiz(@AuthenticationPrincipal AppUser user, @PathVariable long id){
+        if (!quizService.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "quiz doesnt exist!!");
+        }
+        quizService.deleteQuizById(user, id);
+    }
+
     @Override
     public void run(String... args){
         System.out.println("done");
     }
-
 }

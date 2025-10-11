@@ -37,4 +37,8 @@ public class Quiz {
     @Fetch(FetchMode.SUBSELECT)
     private List<Integer> correctOption;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private AppUser user;
+
 }

@@ -1,12 +1,16 @@
 package org.example.quizengine.quiz.service;
 
 import org.example.quizengine.quiz.dto.Answers;
+import org.example.quizengine.quiz.entity.AppUser;
 import org.example.quizengine.quiz.service.mapper.MyMapper;
 import org.example.quizengine.quiz.dto.Feedback;
 import org.example.quizengine.quiz.dto.QuizDTO;
 import org.example.quizengine.quiz.entity.Quiz;
 import org.example.quizengine.quiz.repository.QuizRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,7 +35,8 @@ public class QuizService {
                 .map(quiz -> mapper.turnIntoDTO(quiz, QuizDTO.class)).toList();
     }
 
-    public QuizDTO createQuiz(Quiz quiz){
+    public QuizDTO createQuiz(AppUser user, Quiz quiz){
+        quiz.setUser(user);
         quizRepo.save(quiz);
         return mapper.turnIntoDTO(quiz, QuizDTO.class);
     }
@@ -48,5 +53,21 @@ public class QuizService {
         System.out.println(quiz.getCorrectOption());
         System.out.println(Arrays.asList(answer.getAnswers()));
         return new Feedback(false, "Wrong answer! Please, try again");
+    }
+
+    public boolean existsById(long id){
+            return quizRepo.existsById(id);
+    }
+
+    @Transactional
+    public void deleteQuizById(AppUser user, long id){
+        Quiz quiz = quizRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Quiz not found"));
+
+        if (quiz.getUser().getId() != user.getId()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "It's not your quiz, bitch!");
+        }
+
+        quizRepo.deleteById(id);
     }
 }
